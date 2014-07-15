@@ -27,9 +27,10 @@ http://www.mulesoft.org/schema/mule/ee/ftp http://www.mulesoft.org/schema/mule/e
         </ftp:inbound-endpoint>
         <data-mapper:transform config-ref="MS_Excel_To_XML" doc:name="MS Excel To XML"/>
         <ftp:outbound-endpoint host="${ftp.host}" port="21" path="/" user="${ftp.user}" password="${ftp.pass}" passive="${ftp.passive}" outputPattern="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml" responseTimeout="10000" doc:name="FTP"/>
+        <set-session-variable variableName="email_to" value="#[message.inboundProperties.originalFilename.replace('.xlsx','')]" doc:name="Set Email To Address"/>
         <tracking:custom-event event-name="file-pickup" doc:name="Custom Business Event">
             <tracking:meta-data key="Event" value="File picked up"/>
-            <tracking:meta-data key="Filename" value="#[message.inboundProperties.originalFilename]"/>
+            <tracking:meta-data key="Email to" value="#[sessionVars.email_to]"/>
             <tracking:meta-data key="Order Count" value="#[xpath('count(//data)')]"/>
         </tracking:custom-event>
         <object-to-string-transformer doc:name="Object to String"/>
@@ -38,7 +39,7 @@ http://www.mulesoft.org/schema/mule/ee/ftp http://www.mulesoft.org/schema/mule/e
         <file:file-to-byte-array-transformer doc:name="File to Byte Array"/>
         <logger message="Attachment ok. Message: #[message]" level="INFO" doc:name="Logger"/>
         <set-payload value="#[message.inboundProperties.originalFilename] has been processed at #[server.dateTime.format()]" doc:name="Construct Email Message"/>
-        <smtp:outbound-endpoint host="smtp.gmail.com" port="587" user="muley.sg%40gmail.com" password="mule1379" to="${email.to}" from="Mule" subject="Excel File processed" responseTimeout="10000" mimeType="text/plain" doc:name="SMTP"/>
+        <smtp:outbound-endpoint host="smtp.gmail.com" port="587" user="muley.sg%40gmail.com" password="mule1379" to="#[sessionVars.email_to]" from="Mule" subject="Excel File processed" responseTimeout="10000" mimeType="text/plain" doc:name="SMTP"/>
         <logger message="Email sent!" level="INFO" doc:name="Logger"/>
         <!--<file:outbound-endpoint path="/Users/ken/workspaces/node/expressjs-fileupload/public/uploaded/files" outputPattern="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml" responseTimeout="10000" doc:name="File"/> -->
     </flow>
