@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ftp="http://www.mulesoft.org/schema/mule/ee/ftp" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/dropbox http://www.mulesoft.org/schema/mule/dropbox/current/mule-dropbox.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/sftplite http://www.mulesoft.org/schema/mule/sftplite/current/mule-sftplite.xsd
+http://www.mulesoft.org/schema/mule/ee/ftp http://www.mulesoft.org/schema/mule/ee/ftp/current/mule-ftp-ee.xsd">
+    <smtp:gmail-connector name="Gmail" fromAddress="muley.sg@gmail.com" replyToAddresses="muley.sg@gmail.com" subject="File processed!" validateConnections="true" doc:name="Gmail"/>
+    <ftp:connector name="FTP" pollingFrequency="${ftp.poolingFreq}" validateConnections="true" moveToDirectory="/processed" doc:name="FTP" moveToPattern="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename]" passive="${ftp.passive}"/>
+    <data-mapper:config name="MS_Excel_To_XML" transformationGraphPath="ms_excel_to_xml.grf" doc:name="MS_Excel_To_XML"/>
+    <flow name="xls_to_xmlFlow" doc:name="xls_to_xmlFlow" tracking:enable-default-events="true">
+        <ftp:inbound-endpoint host="${ftp.host}" port="21" path="/" user="${ftp.user}" password="${ftp.pass}" connector-ref="FTP" responseTimeout="10000" doc:name="FTP" passive="${ftp.passive}" tracking:enable-default-events="true" pollingFrequency="${ftp.poolingFreq}">
+        	<file:filename-wildcard-filter pattern="*.xlsx"/>
+        </ftp:inbound-endpoint>
+        <data-mapper:transform config-ref="MS_Excel_To_XML" doc:name="MS Excel To XML"/>
+        <ftp:outbound-endpoint host="${ftp.host}" port="21" path="/" user="${ftp.user}" password="${ftp.pass}" passive="${ftp.passive}" outputPattern="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml" responseTimeout="10000" doc:name="FTP"/>
+        <tracking:custom-event event-name="file-pickup" doc:name="Custom Business Event">
+            <tracking:meta-data key="Event" value="File picked up"/>
+            <tracking:meta-data key="Filename" value="#[message.inboundProperties.originalFilename]"/>
+            <tracking:meta-data key="Order Count" value="#[xpath('count(//data)')]"/>
+        </tracking:custom-event>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-attachment attachmentName="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml" value="#[payload]" contentType="text/xml" doc:name="Attachment"/>
+        <logger message="Attachment ok" level="INFO" doc:name="Logger"/>
+        <file:file-to-byte-array-transformer doc:name="File to Byte Array"/>
+        <logger message="Attachment ok. Message: #[message]" level="INFO" doc:name="Logger"/>
+        <set-payload value="#[message.inboundProperties.originalFilename] has been processed at #[server.dateTime.format()]" doc:name="Construct Email Message"/>
+        <smtp:outbound-endpoint host="smtp.gmail.com" port="587" user="muley.sg%40gmail.com" password="mule1379" to="${email.to}" from="Mule" subject="Excel File processed" responseTimeout="10000" mimeType="text/plain" doc:name="SMTP"/>
+        <logger message="Email sent!" level="INFO" doc:name="Logger"/>
+        <!--<file:outbound-endpoint path="/Users/ken/workspaces/node/expressjs-fileupload/public/uploaded/files" outputPattern="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml" responseTimeout="10000" doc:name="File"/> -->
+    </flow>
+</mule>

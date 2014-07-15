@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="xls_to_xml">
+    <global-element name="Gmail" type="http://www.mulesoft.org/schema/mule/smtp/gmail-connector" entity-id="Gmail#1">
+        <properties>
+            <property name="dispatcherPoolFactory-ref"/>
+            <property name="subject" value="File processed!"/>
+            <property name="name" value="Gmail"/>
+            <property name="fromAddress" value="muley.sg@gmail.com"/>
+            <property name="bccAddresses"/>
+            <property name="validateConnections" value="true"/>
+            <property name="dynamicNotification"/>
+            <property name="contentType"/>
+            <property name="auxiliary;index" value="1"/>
+            <property name="replyToAddresses" value="muley.sg@gmail.com"/>
+            <property name="ccAddresses"/>
+        </properties>
+    </global-element>
+    <global-element name="FTP" type="http://www.mulesoft.org/schema/mule/ee/ftp/connector" entity-id="FTP#1">
+        <properties>
+            <property name="streaming"/>
+            <property name="moveToPattern" value="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename]"/>
+            <property name="binary"/>
+            <property name="d"/>
+            <property name="pollingFrequency" value="${ftp.poolingFreq}"/>
+            <property name="auxiliary;metamoveToDirectoryEnabled" value="true"/>
+            <property name="validateConnections" value="true"/>
+            <property name="delFiles"/>
+            <property name="dispatcherPoolFactory-ref"/>
+            <property name="moveToDirectory" value="/processed"/>
+            <property name="fileAge"/>
+            <property name="name" value="FTP"/>
+            <property name="passive" value="${ftp.passive}"/>
+            <property name="connectionFactoryClass"/>
+            <property name="dynamicNotification"/>
+            <property name="lll"/>
+            <property name="cFiles"/>
+            <property name="outputPattern"/>
+            <property name="auxiliary;index" value="2"/>
+        </properties>
+    </global-element>
+    <global-element name="MS_Excel_To_XML" type="http://www.mulesoft.org/schema/mule/ee/data-mapper/config" entity-id="DataMapper#1">
+        <properties>
+            <property name="name" value="MS_Excel_To_XML"/>
+            <property name="auxiliary;index" value="3"/>
+            <property name="transformationGraphPath" value="ms_excel_to_xml.grf"/>
+        </properties>
+    </global-element>
+    <flow SubFlow="false" name="xls_to_xmlFlow" type="http://www.mulesoft.org/schema/mule/core/flow" entity-id="02aedc91-b67b-4f1a-af8e-4aab96ee6197">
+        <properties>
+            <property name="initialState"/>
+            <property name="processingStrategy2"/>
+            <property name="processingStrategy"/>
+            <property name="bussinessEventsLabel"/>
+            <property name="tracking:enable-default-events" value="true"/>
+            <property name="auxiliary;index" value="4"/>
+        </properties>
+        <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#1">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <endpoint direction="Inbound" name="FTP" type="http://www.mulesoft.org/schema/mule/ee/ftp/endpoint" entity-id="FTP#2">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="port" value="21"/>
+                    <property name="binary"/>
+                    <property name="host" value="${ftp.host}"/>
+                    <property name="pollingFrequency" value="${ftp.poolingFreq}"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="password" value="${ftp.pass}"/>
+                    <property name="tracking:enable-default-events" value="true"/>
+                    <property name="exchange-pattern" value="one-way"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="address"/>
+                    <property name="encoding"/>
+                    <property name="path" value="/"/>
+                    <property name="passive" value="${ftp.passive}"/>
+                    <property name="lll"/>
+                    <property name="user" value="${ftp.user}"/>
+                    <property name="outputPattern"/>
+                    <property name="auxiliary;index" value="5"/>
+                    <property name="mimeType"/>
+                    <property name="responseTimeout" value="10000"/>
+                    <property name="connector-ref" value="FTP"/>
+                </properties>
+            </endpoint>
+            <pattern name="MS Excel To XML" type="http://www.mulesoft.org/schema/mule/ee/data-mapper/data-mapper-connector" entity-id="DataMapper#2">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="returnClass"/>
+                    <property name="stream"/>
+                    <property name="input-ref"/>
+                    <property name="target"/>
+                    <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/ee/data-mapper/transform"/>
+                    <property name="pipeSize"/>
+                    <property name="config-ref" value="MS_Excel_To_XML"/>
+                    <property name="auxiliary;index" value="7"/>
+                </properties>
+            </pattern>
+            <endpoint direction="Outbound" name="FTP" type="http://www.mulesoft.org/schema/mule/ee/ftp/endpoint" entity-id="FTP#3">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="port" value="21"/>
+                    <property name="binary"/>
+                    <property name="host" value="${ftp.host}"/>
+                    <property name="pollingFrequency"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="password" value="${ftp.pass}"/>
+                    <property name="tracking:enable-default-events"/>
+                    <property name="exchange-pattern" value="one-way"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="address"/>
+                    <property name="encoding"/>
+                    <property name="path" value="/"/>
+                    <property name="passive" value="${ftp.passive}"/>
+                    <property name="lll"/>
+                    <property name="user" value="${ftp.user}"/>
+                    <property name="outputPattern" value="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml"/>
+                    <property name="auxiliary;index" value="8"/>
+                    <property name="mimeType"/>
+                    <property name="responseTimeout" value="10000"/>
+                    <property name="connector-ref"/>
+                </properties>
+            </endpoint>
+            <pattern name="Custom Business Event" type="http://www.mulesoft.org/schema/mule/ee/tracking/custom-event" entity-id="Custom Business Event#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="event-name" value="file-pickup"/>
+                    <property name="auxiliary;index" value="9"/>
+                    <property-collection name="@http://www.mulesoft.org/schema/mule/ee/tracking/meta-data;0">
+                        <property name="value" value="File picked up"/>
+                        <property name="key" value="Event"/>
+                        <property name="auxiliary;index" value="10"/>
+                        <property name="auxiliary;wrapIn" value="10"/>
+                    </property-collection>
+                    <property-collection name="@http://www.mulesoft.org/schema/mule/ee/tracking/meta-data;1">
+                        <property name="value" value="#[message.inboundProperties.originalFilename]"/>
+                        <property name="key" value="Filename"/>
+                        <property name="auxiliary;index" value="11"/>
+                        <property name="auxiliary;wrapIn" value="11"/>
+                    </property-collection>
+                    <property-collection name="@http://www.mulesoft.org/schema/mule/ee/tracking/meta-data;2">
+                        <property name="value" value="#[xpath('count(//data)')]"/>
+                        <property name="key" value="Order Count"/>
+                        <property name="auxiliary;index" value="12"/>
+                        <property name="auxiliary;wrapIn" value="12"/>
+                    </property-collection>
+                </properties>
+            </pattern>
+            <pattern name="Object to String" type="http://www.mulesoft.org/schema/mule/core/object-to-string-transformer" entity-id="Object to String#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="returnClass"/>
+                    <property name="ignoreBadInput"/>
+                    <property name="encoding"/>
+                    <property name="auxiliary;index" value="13"/>
+                    <property name="mimeType"/>
+                </properties>
+            </pattern>
+            <pattern name="Attachment" type="http://www.mulesoft.org/schema/mule/core/attachment-transformer" entity-id="Attachment#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="value" value="#[payload]"/>
+                    <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/core/set-attachment"/>
+                    <property name="contentType" value="text/xml"/>
+                    <property name="attachmentName" value="#[server.dateTime.format(&quot;ddMMyyy-hhmmss&quot;)]_#[message.inboundProperties.originalFilename].xml"/>
+                    <property name="auxiliary;index" value="14"/>
+                </properties>
+            </pattern>
+            <pattern name="Logger" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="message" value="Attachment ok"/>
+                    <property name="category"/>
+                    <property name="level" value="INFO"/>
+                    <property name="auxiliary;index" value="15"/>
+                </properties>
+            </pattern>
+            <pattern name="File to Byte Array" type="http://www.mulesoft.org/schema/mule/file/file-to-byte-array-transformer" entity-id="File to Byte Array#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="returnClass"/>
+                    <property name="ignoreBadInput"/>
+                    <property name="encoding"/>
+                    <property name="auxiliary;index" value="16"/>
+                    <property name="mimeType"/>
+                </properties>
+            </pattern>
+            <pattern name="Logger" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#2">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="message" value="Attachment ok. Message: #[message]"/>
+                    <property name="category"/>
+                    <property name="level" value="INFO"/>
+                    <property name="auxiliary;index" value="17"/>
+                </properties>
+            </pattern>
+            <pattern name="Construct Email Message" type="http://www.mulesoft.org/schema/mule/core/set-payload" entity-id="Set Payload#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="value" value="#[message.inboundProperties.originalFilename] has been processed at #[server.dateTime.format()]"/>
+                    <property name="auxiliary;index" value="18"/>
+                </properties>
+            </pattern>
+            <endpoint direction="Outbound" name="SMTP" type="http://www.mulesoft.org/schema/mule/smtps/endpoint" entity-id="SMTP#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="port" value="587"/>
+                    <property name="to" value="${email.to}"/>
+                    <property name="host" value="smtp.gmail.com"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="subject" value="Excel File processed"/>
+                    <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/smtp/endpoint"/>
+                    <property name="bcc"/>
+                    <property name="from" value="Mule"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="password" value="mule1379"/>
+                    <property name="tracking:enable-default-events"/>
+                    <property name="exchange-pattern" value="one-way"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="replyTo"/>
+                    <property name="address"/>
+                    <property name="encoding"/>
+                    <property name="user" value="muley.sg%40gmail.com"/>
+                    <property name="auxiliary;index" value="19"/>
+                    <property name="mimeType" value="text/plain"/>
+                    <property name="responseTimeout" value="10000"/>
+                    <property name="cc"/>
+                    <property name="connector-ref"/>
+                </properties>
+            </endpoint>
+            <pattern name="Logger" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#3">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="message" value="Email sent!"/>
+                    <property name="category"/>
+                    <property name="level" value="INFO"/>
+                    <property name="auxiliary;index" value="20"/>
+                </properties>
+            </pattern>
+        </lane>
+    </flow>
+</mule-configuration>

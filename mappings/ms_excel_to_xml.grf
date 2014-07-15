@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph __version="3.5.0" author="ken" created="Mon Jul 14 14:37:53 SGT 2014" description="MS Excel To XML" guiVersion="3.4.3.P" id="1405325343809" licenseCode="Unlicensed" licenseType="Unknown" modified="Mon Jul 14 14:37:53 SGT 2014" modifiedBy="ken" name="MS_Excel_To_XML" preview-file="/Users/ken/submit/sample/data.xlsx" revision="1.0" showComponentDetails="false">
+<Global>
+<Metadata __referenceCounter="1" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _type="Input" id="8f15424b-de36-481e-a41d-48e8853bf2da">
+<Record fieldDelimiter="," name="data" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __sourcePath="1/0" label="Name" name="Name" type="string"/>
+<Field __sourcePath="1/1" label="Order_ID" name="Order_ID" type="long"/>
+<Field __sourcePath="1/2" label="Description" name="Description" type="string"/>
+<Field __sourcePath="1/3" label="Quantity" name="Quantity" type="long"/>
+<Field __sourcePath="1/4" label="Unit_Price" name="Unit_Price" type="long"/>
+<Field __sourcePath="1/5" label="Total" name="Total" type="long"/>
+<Field __artificialType="_id" auto_filling="global_row_count" name="__id" type="long"/>
+</Record>
+</Metadata>
+<Metadata __index="0" __referenceCounter="1" __sourcePath="{}/orders/data" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _id="__id" _metadataParentId="1496f2b7-99d6-40e0-8cd3-1b882f7e3650" _parent_id="__parent_id" _type="Output" id="0d9aaba0-224e-4a1b-98b6-72fc07a42c1d">
+<Record fieldDelimiter="," name="data" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_parent_id" __systemManaged="true" name="__parent_id" type="string"/>
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __index="0" __sourcePath="{}/orders/data/Name" containerType="SINGLE" label="Name" name="Name" type="string"/>
+<Field __index="1" __sourcePath="{}/orders/data/Order_ID" containerType="SINGLE" label="Order_ID" name="Order_ID" type="integer"/>
+<Field __index="2" __sourcePath="{}/orders/data/Description" containerType="SINGLE" label="Description" name="Description" type="string"/>
+<Field __index="3" __sourcePath="{}/orders/data/Quantity" containerType="SINGLE" label="Quantity" name="Quantity" type="integer"/>
+<Field __index="4" __sourcePath="{}/orders/data/Unit_Price" containerType="SINGLE" label="Unit_Price" name="Unit_Price" type="integer"/>
+<Field __index="5" __sourcePath="{}/orders/data/Total" containerType="SINGLE" label="Total" name="Total" type="integer"/>
+</Record>
+</Metadata>
+<Metadata __index="0" __referenceCounter="0" __sourcePath="{}/orders" _dataStructure="OBJECT" _id="__id" _type="Output" id="1496f2b7-99d6-40e0-8cd3-1b882f7e3650">
+<Record fieldDelimiter="," name="orders" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+</Record>
+</Metadata>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="inputPayload" output="false" type="object"/>
+<Entry id="DictionaryEntry1" input="false" name="outputPayload" output="true" type="object"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node cacheInMemory="true" charset="UTF-8" enabled="enabled" fileURL="dict:outputPayload" guiName="XML WRITER" guiX="900" guiY="20" id="EXT_XML_WRITER0" type="EXT_XML_WRITER" xmlSchemaURL="./src/main/resources/orders.xsd">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<orders xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <data clover:inPort="0">
+    <Name>$0.Name</Name>
+    <clover:element clover:name="Order_ID">$0.Order_ID</clover:element>
+    <Description>$0.Description</Description>
+    <Quantity>$0.Quantity</Quantity>
+    <clover:element clover:name="Unit_Price">$0.Unit_Price</clover:element>
+    <Total>$0.Total</Total>
+  </data>
+</orders>]]></attr>
+<attr name="_data_format"><![CDATA[XML]]></attr>
+<attr name="__rootGlobalElementName"><![CDATA[orders]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Foreach 'data' -&gt; 'data'" guiX="460" guiY="20" id="FOREACH_DATA_DATA" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
+<attr name="melScript"><![CDATA[//MEL
+//START -> DO NOT REMOVE
+output.__id = (isnull(input.__id) ? null : num2str(input.__id));
+output.__parent_id = (isnull(input.__id) ? null : num2str(input.__id));
+//END -> DO NOT REMOVE
+output.Name = input.Name;
+output.Order_ID = (isnull(input.Order_ID) ? null : long2integer(input.Order_ID));
+output.Description = input.Description;
+output.Quantity = (isnull(input.Quantity) ? null : long2integer(input.Quantity));
+output.Unit_Price = (isnull(input.Unit_Price) ? null : long2integer(input.Unit_Price));
+output.Total = (isnull(input.Total) ? null : long2integer(input.Total));
+
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="dict:inputPayload" guiName="MS Excel READER" guiX="20" guiY="20" id="SPREADSHEET_READER0" type="SPREADSHEET_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>true</writeHeader>
+    </globalAttributes>
+    <defaultSkip>1</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="1">
+            <cloverField>Name</cloverField>
+            <headerRanges>
+                <headerRange begin="A1"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>Order_ID</cloverField>
+            <headerRanges>
+                <headerRange begin="B1"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>Description</cloverField>
+            <headerRanges>
+                <headerRange begin="C1"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>Quantity</cloverField>
+            <headerRanges>
+                <headerRange begin="D1"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>Unit_Price</cloverField>
+            <headerRanges>
+                <headerRange begin="E1"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>Total</cloverField>
+            <headerRanges>
+                <headerRange begin="F1"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+<attr name="_data_format"><![CDATA[XLS]]></attr>
+<attr name="__dataSourceDefinition"><![CDATA[/Users/ken/submit/sample/data.xlsx]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="FOREACH_DATA_DATA:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="0d9aaba0-224e-4a1b-98b6-72fc07a42c1d" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:0"/>
+<Edge debugMode="true" fromNode="SPREADSHEET_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="8f15424b-de36-481e-a41d-48e8853bf2da" outPort="Port 0 (output)" toNode="FOREACH_DATA_DATA:0"/>
+</Phase>
+</Graph>
